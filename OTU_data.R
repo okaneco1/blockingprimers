@@ -52,8 +52,8 @@ total_reads_piechart
 nrow(sums) # 23 OTU
 
 total <- sum(sums$readcounts) # 2090328 total reads
-total5 <- sum(sums$readcounts[1:4]) # 2056721 total reads in first five
-round((total5/total)*100, digits = 2) # 96.76% in first five
+total4 <- sum(sums$readcounts[1:4]) # 2056721 total reads in first four
+round((total4/total)*100, digits = 2) # 96.76% in first four
 
 
 
