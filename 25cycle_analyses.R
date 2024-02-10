@@ -87,16 +87,28 @@ custom_colors2 <- c("Blocker2_25" = "#add8e6",
 filtered_matrix_2 <- filtered_matrix_2 %>%
   mutate(sample_blocker = fct_relevel(sample_blocker, rev(levels(sample_blocker))))
 
+# labels for boxes
+labels <- c(
+  Petromyzontidae_unclassified = "Sea Lamprey",
+  Salvelinus_namaycush = "Lake Trout"
+)
+
 # plot
 ggplot(filtered_matrix_2, aes(x = sample_blocker, y = Reads, fill = sample_group)) +
   geom_bar(stat="identity", position=position_dodge(width = 0.75, preserve = "single")) + # preserve as some data is missing and this preserves column width
-  facet_wrap(~Species) +
+  facet_wrap(~Species, labeller = labeller(Species = labels)) +
   scale_fill_manual(values = custom_colors2) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 70, vjust = 0.95, hjust=1, size=9),
+        text = element_text(family = "Helvetica", face = "bold"),
+        strip.text = element_text(size = 14),
+        axis.text = element_text(family = "Helvetica", face = "plain"),
+        legend.key.size = unit(1.5, "lines"),  
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 14, face = "bold"),
         panel.spacing = unit(1, "lines")) +
-  labs(x = "Sample",
-       y = "Number of Sequence Reads",
+  labs(x = "Blocker + Sample",
+       y = "Sequence Read Count",
        title = "Sequence Reads per Cycle Number",
        fill = "Blocker + Cycle Number") 
 
