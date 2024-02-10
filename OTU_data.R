@@ -64,7 +64,3 @@ round((total4/total)*100, digits = 2) # 96.76% in first four
 
 
 
-
-
-
-
