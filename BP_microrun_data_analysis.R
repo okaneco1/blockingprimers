@@ -28,37 +28,45 @@ matrix1$block <- ifelse(grepl("NoBlock", matrix1$Sample), "No", "Yes")
 matrix1$cycles <- ifelse(grepl("25", matrix1$Sample), "25", "40")
 
 # which sample?
-matrix1$sample <- ifelse(grepl("CA14", matrix1$Sample), "CA14",
-                         ifelse(grepl("HP3", matrix1$Sample), "HP3",
-                                ifelse(grepl("HP15", matrix1$Sample), "HP15",
-                                       ifelse(grepl("HP5", matrix1$Sample), "HP5",
-                                              ifelse(grepl("M1", matrix1$Sample), "M1",
-                                                     ifelse(grepl("M4", matrix1$Sample), "M4",
-                                                            ifelse(grepl("M5", matrix1$Sample), "M5", "NTC")))))))
+matrix1 <- matrix1 %>%
+  mutate(sample = case_when(
+    grepl("CA14", Sample) ~ "CA14",
+    grepl("HP3", Sample) ~ "HP3",
+    grepl("HP15", Sample) ~ "HP15",
+    grepl("HP5", Sample) ~ "HP5",
+    grepl("M1", Sample) ~ "M1",
+    grepl("M4", Sample) ~ "M4",
+    grepl("M5", Sample) ~ "M5",
+    TRUE ~ "NTC" # default case
+  ))
 
 # block A or block B?
 matrix1$A_B <- ifelse(grepl("_A_", matrix1$Sample), "A", 
-                      ifelse(grepl("_B_", matrix1$Sample), "B","NB"))
+                      ifelse(grepl("_B_", matrix1$Sample), "B","No_Blocker"))
 
 # which end modification?
 matrix1$end_mod <- ifelse(grepl("_C3_", matrix1$Sample), "C3", 
-                          ifelse(grepl("_dT_", matrix1$Sample), "dT","NB"))
+                          ifelse(grepl("_dT_", matrix1$Sample), "dT","No_Blocker"))
 
 # HPLC purified?
 matrix1$purification <- ifelse(grepl("_H_", matrix1$Sample), "H", 
-                               ifelse(grepl("NoBlock", matrix1$Sample), "NB","non_H"))
+                               ifelse(grepl("NoBlock", matrix1$Sample), "No_Blocker","non_H"))
 
 # specific Sample column
-matrix1$specific_blocker <- ifelse(grepl("40_PMBlock_A_C3_H_", matrix1$Sample), "40_A_C3_H",
-                                   ifelse(grepl("40_PMBlock_B_C3_H_", matrix1$Sample), "40_B_C3_H",
-                                          ifelse(grepl("40_PMBlock_A_dT_H_", matrix1$Sample), "40_A_dT_H",
-                                                 ifelse(grepl("40_PMBlock_B_dT_H_", matrix1$Sample), "40_B_dT_H",
-                                                        ifelse(grepl("40_PMBlock_A_C3", matrix1$Sample), "40_A_C3",
-                                                               ifelse(grepl("40_PMBlock_B_C3", matrix1$Sample), "40_B_C3",
-                                                                      ifelse(grepl("40_PMBlock_A_dT", matrix1$Sample), "40_A_dT",
-                                                                             ifelse(grepl("40_PMBlock_B_dT", matrix1$Sample), "40_B_dT",
-                                                                                    ifelse(grepl("25_PMBlock_B_C3_H_", matrix1$Sample), "25_B_C3_H",
-                                                                                           ifelse(grepl("25_PMBlock_B_C3", matrix1$Sample), "25_B_C3", "NB"))))))))))
+matrix1 <- matrix1 %>%
+  mutate(specific_blocker = case_when(
+    grepl("40_PMBlock_A_C3_H_", Sample) ~ "40_A_C3_H",
+    grepl("40_PMBlock_B_C3_H_", Sample) ~ "40_B_C3_H",
+    grepl("40_PMBlock_A_dT_H_", Sample) ~ "40_A_dT_H",
+    grepl("40_PMBlock_B_dT_H_", Sample) ~ "40_B_dT_H",
+    grepl("40_PMBlock_A_C3", Sample) ~ "40_A_C3",
+    grepl("40_PMBlock_B_C3", Sample) ~ "40_B_C3",
+    grepl("40_PMBlock_A_dT", Sample) ~ "40_A_dT",
+    grepl("40_PMBlock_B_dT", Sample) ~ "40_B_dT",
+    grepl("25_PMBlock_B_C3_H_", Sample) ~ "25_B_C3_H",
+    grepl("25_PMBlock_B_C3", Sample) ~ "25_B_C3",
+    TRUE ~ "No_Blocker" # default case if none of the above conditions are met
+  ))
 
 #####################################################################
 # Making Graphs
@@ -141,19 +149,19 @@ matrix1 %>%
 ##### random stats ##########
 
 matrix1 %>% 
-  filter(specific_blocker == "NB" & cycles == "25") %>%
+  filter(specific_blocker == "No_Blocker" & cycles == "25") %>%
   summarize(mean = mean(Petromyzontidae_unclassified))  # 12211
 
 matrix1 %>% 
-  filter(specific_blocker == "NB" & cycles == "40") %>%
+  filter(specific_blocker == "No_Blocker" & cycles == "40") %>%
   summarize(mean = mean(Petromyzontidae_unclassified))  # 19387
   
 
 # comparing the two cycle groups for number of lake trout reads
 
-group25 <- subset(matrix1, cycles == "25" & specific_blocker != "NB" & sample != "NTC" & sample != "M5")
-group40 <- subset(matrix1, cycles == "40" & specific_blocker != "NB" & sample != "NTC" & sample != "M5")
-groupNB <- subset(matrix1, cycles == "40" & specific_blocker == "NB" & sample != "NTC" & sample != "M5")
+group25 <- subset(matrix1, cycles == "25" & specific_blocker != "No_Blocker" & sample != "NTC" & sample != "M5")
+group40 <- subset(matrix1, cycles == "40" & specific_blocker != "No_Blocker" & sample != "NTC" & sample != "M5")
+groupNB <- subset(matrix1, cycles == "40" & specific_blocker == "No_Blocker" & sample != "NTC" & sample != "M5")
 
 summarize(groupNB, mean = mean(groupNB$Salvelinus_namaycush))
 summarize(group40, mean = mean(group40$Salvelinus_namaycush))
@@ -209,19 +217,23 @@ reordered_long <- reordered_long %>%
   group_by(specific_blocker) %>%
   mutate(Proportion = Reads / sum(Reads))
 
-reordered_long$Digestive_Sample <- ifelse(grepl("CA14", reordered_long$Sample), "CA14",
-                                          ifelse(grepl("HP3", reordered_long$Sample), "HP3",
-                                                 ifelse(grepl("HP15", reordered_long$Sample), "HP15",
-                                                        ifelse(grepl("HP5", reordered_long$Sample), "HP5",
-                                                               ifelse(grepl("M1", reordered_long$Sample), "M1",
-                                                                      ifelse(grepl("M4", reordered_long$Sample), "M4",
-                                                                             ifelse(grepl("M5", reordered_long$Sample), "M5", "NTC")))))))
+reordered_long <- reordered_long %>%
+  mutate(Digestive_Sample = case_when(
+    grepl("CA14", Sample) ~ "CA14",
+    grepl("HP3", Sample) ~ "HP3",
+    grepl("HP15", Sample) ~ "HP15",
+    grepl("HP5", Sample) ~ "HP5",
+    grepl("M1", Sample) ~ "M1",
+    grepl("M4", Sample) ~ "M4",
+    grepl("M5", Sample) ~ "M5",
+    TRUE ~ "NTC" # default case
+  ))
 
 # taking ".12S" out of the sample names
 reordered_long$Sample <- gsub("\\.12S$", "", reordered_long$Sample)
 
 #colors
-custom_colors <- c("#DAFFFB","#64CCC5", "#79a4ed", "#6554AF","#001C30")
+custom_colors <- c("#50b299", "#40aac2","#87a7e3", "#7d5388","#01161e")
 
 # all samples
 ggplot(reordered_long, aes(x = Sample, y = Reads, fill = Species)) +
@@ -285,7 +297,7 @@ reordered_long$Digestive_Sample <- factor(reordered_long$Digestive_Sample,
 # breaking up the NB sections into 25-cycle and 40-cycle
 for (i in 1:nrow(reordered_long)) {
   if (grepl("25_NoBlock", reordered_long$Sample[i])) {
-    reordered_long$specific_blocker[i] <- "NB_25"
+    reordered_long$specific_blocker[i] <- "No_Blocker_25"
   }
 }
 
@@ -305,11 +317,11 @@ ggplot(seq_df_40, aes(x = specific_blocker, y = Reads, fill = Species)) +
   scale_fill_manual(values = custom_colors, 
                     labels = c("Salmonid (unclassified)",  "Lake Trout", "White Sucker", "Homo Sapiens", "Sea Lamprey"))+
   theme_few()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size = 11),
+  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size = 15),
         plot.title = element_text(hjust = 0.5)) +
   ggtitle("Sequence Read Counts per Taxa per Blocking Primer") +
   labs(x = "Blocking Primer", y = "Number of Sequence Reads") +
-  #facet_wrap(~ Digestive_Sample, ncol = 3)+  # toggle this on/off for wrapped/unwrapped plot
+  facet_wrap(~ Digestive_Sample, ncol = 2)+  # toggle this on/off for wrapped/unwrapped plot
   theme(text = element_text(family = "Helvetica", face = "bold"),
         strip.text = element_text(size = 14),
         axis.text = element_text(family = "Helvetica", face = "plain"),
@@ -317,5 +329,63 @@ ggplot(seq_df_40, aes(x = specific_blocker, y = Reads, fill = Species)) +
         legend.key.size = unit(1.5, "lines"),  # Adjust legend key size
         legend.text = element_text(size = 12),  # Adjust legend text size
         legend.title = element_text(size = 14, face = "bold"))
+
+
+# filter out homo sapiens
+seq_df_40_nohs <- filter(seq_df_40, Species != "Homo_sapiens")
+# adjust colors
+custom_colors2 <- c("#6bc9b2", "#40aac2","#87a7e3","#01161e")
+
+#plot again
+no_hs_seq_plot <- ggplot(seq_df_40_nohs, aes(x = specific_blocker, y = Reads, fill = Species)) +
+  geom_col() +
+  scale_fill_manual(values = custom_colors2, 
+                    labels = c("Salmonid (unclassified)",  "Lake Trout", "White Sucker", "Sea Lamprey"))+
+  theme_few()+
+  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size = 15),
+        plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Sequence Read Counts per Taxa per Blocking Primer") +
+  labs(x = "Blocking Primer", y = "Number of Sequence Reads") +
+  facet_wrap(~ Digestive_Sample, ncol = 2)+  # toggle this on/off for wrapped/unwrapped plot
+  theme(text = element_text(family = "Helvetica", face = "bold"),
+        strip.text = element_text(size = 14),
+        axis.text = element_text(family = "Helvetica", face = "plain"),
+        axis.text.x = element_text(size = 9),
+        legend.key.size = unit(1.5, "lines"),  # Adjust legend key size
+        legend.text = element_text(size = 12),  # Adjust legend text size
+        legend.title = element_text(size = 14, face = "bold"))
+
+no_hs_seq_plot
+
+
+
+
+
+
+
+#---------- more basic stats on blocking primer numbers
+head(seq_df_40_nohs)
+
+m1_nb_total <- seq_df_40_nohs %>%
+  filter(specific_blocker )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
