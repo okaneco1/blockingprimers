@@ -93,11 +93,31 @@ labels <- c(
   Salvelinus_namaycush = "Lake Trout"
 )
 
+# change sample_group levels so that no blocker is first
+filtered_matrix_2$sample_group <- factor(filtered_matrix_2$sample_group, 
+                                         levels = c("No_Blocker_25", 
+                                                    "No_Blocker_40", 
+                                                    "Blocker2_25", 
+                                                    "Blocker2_40", 
+                                                    "Blocker6_25", 
+                                                    "Blocker6_40"))
+# change sample_blocker levels for order of bars
+filtered_matrix_2$sample_blocker <- factor(filtered_matrix_2$sample_blocker,
+                                           levels = c("No_Blocker_M1", "No_Blocker_M4","No_Blocker_CA14", 
+                                                      "No_Blocker_HP15", "No_Blocker_HP3", "No_Blocker_HP5", 
+                                                      "Blocker2_M1", "Blocker2_M4","Blocker2_CA14", 
+                                                      "Blocker2_HP15", "Blocker2_HP3", "Blocker2_HP5", 
+                                                      "Blocker6_M1", "Blocker6_M4", "Blocker6_CA14",
+                                                      "Blocker6_HP15", "Blocker6_HP3", "Blocker6_HP5"))
+
 # plot
 ggplot(filtered_matrix_2, aes(x = sample_blocker, y = Reads, fill = sample_group)) +
-  geom_bar(stat="identity", position=position_dodge(width = 0.75, preserve = "single")) + # preserve as some data is missing and this preserves column width
+  geom_bar(stat="identity", position=position_dodge(width = 0.75, preserve = "single")) +
   facet_wrap(~Species, labeller = labeller(Species = labels)) +
-  scale_fill_manual(values = custom_colors2) +
+  scale_fill_manual(values = custom_colors2,
+                    labels = c("No Blocker (25 Cycles)", "No Blocker (40 Cycles)", 
+                               "Blocker 2 (25 Cycles)", "Blocker 2 (40 Cycles)", 
+                               "Blocker 6 (25 Cycles)", "Blocker 6 (40 Cycles)")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 70, vjust = 0.95, hjust=1, size=9),
         text = element_text(family = "Helvetica", face = "bold"),
@@ -106,11 +126,12 @@ ggplot(filtered_matrix_2, aes(x = sample_blocker, y = Reads, fill = sample_group
         legend.key.size = unit(1.5, "lines"),  
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 14, face = "bold"),
-        panel.spacing = unit(1, "lines")) +
+        panel.spacing = unit(1, "lines"),
+        plot.title = element_text(hjust = 0.5)) +
   labs(x = "Blocker + Sample",
        y = "Sequence Read Count",
        title = "Sequence Reads per Cycle Number",
-       fill = "Blocker + Cycle Number") 
+       fill = "Blocker + Cycle Number")
 
 
 # This only looks at sea lamprey and lake trout -- similar results were shown for the single
