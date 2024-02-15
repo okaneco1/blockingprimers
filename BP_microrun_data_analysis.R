@@ -55,16 +55,14 @@ matrix1$purification <- ifelse(grepl("_H_", matrix1$Sample), "H",
 # specific Sample column
 matrix1 <- matrix1 %>%
   mutate(specific_blocker = case_when(
-    grepl("40_PMBlock_A_C3_H_", Sample) ~ "40_A_C3_H",
-    grepl("40_PMBlock_B_C3_H_", Sample) ~ "40_B_C3_H",
-    grepl("40_PMBlock_A_dT_H_", Sample) ~ "40_A_dT_H",
-    grepl("40_PMBlock_B_dT_H_", Sample) ~ "40_B_dT_H",
-    grepl("40_PMBlock_A_C3", Sample) ~ "40_A_C3",
-    grepl("40_PMBlock_B_C3", Sample) ~ "40_B_C3",
-    grepl("40_PMBlock_A_dT", Sample) ~ "40_A_dT",
-    grepl("40_PMBlock_B_dT", Sample) ~ "40_B_dT",
-    grepl("25_PMBlock_B_C3_H_", Sample) ~ "25_B_C3_H",
-    grepl("25_PMBlock_B_C3", Sample) ~ "25_B_C3",
+    grepl("PMBlock_A_C3_H_", Sample) ~ "Blocker1",
+    grepl("PMBlock_B_C3_H_", Sample) ~ "Blocker2",
+    grepl("PMBlock_A_dT_H_", Sample) ~ "Blocker3",
+    grepl("PMBlock_B_dT_H_", Sample) ~ "Blocker4",
+    grepl("PMBlock_A_C3", Sample) ~ "Blocker5",
+    grepl("PMBlock_B_C3", Sample) ~ "Blocker6",
+    grepl("PMBlock_A_dT", Sample) ~ "Blocker7",
+    grepl("PMBlock_B_dT", Sample) ~ "Blocker8",
     TRUE ~ "No_Blocker" # default case if none of the above conditions are met
   ))
 
@@ -90,8 +88,8 @@ matrix1 %>%
   geom_boxplot(alpha=0.8, outlier.shape = NA)+
   # bit messy with jitter or text, so can turn on/off
   geom_jitter(width = 0.2, height = 0, color = "black", alpha = 0.5) +
-  geom_text_repel(data = subset(matrix1, sample %in% c("CA14","HP3")),
-    aes(label = sample, alpha=0.8), vjust = 2, color = "black", size = 3, fontface = "bold") +
+  #geom_text_repel(data = subset(matrix1, sample %in% c("CA14","HP3")),
+    #aes(label = sample, alpha=0.8), vjust = 2, color = "black", size = 3, fontface = "bold") +
   scale_fill_manual(values=c("darkgray","#64CCC5")) +
   labs(x="Blocking Primer", y="Lake Trout Reads") +
   theme_classic()
@@ -206,10 +204,9 @@ matrix1 %>%
   theme_classic()
 
 # reorder and create stacked bar column
-
 reordered <- matrix1[order(matrix1$specific_blocker), ]
 
-reordered_long <- reordered[ ,c(1:6,13,14)] %>%
+reordered_long <- reordered[ ,c(1:6,13)] %>%
   pivot_longer(cols = c(Salvelinus_namaycush, Catostomus_commersonii, Petromyzontidae_unclassified, Salmonidae_unclassified, Homo_sapiens), 
                names_to = "Species", values_to = "Reads")
 
@@ -331,10 +328,14 @@ ggplot(seq_df_40, aes(x = specific_blocker, y = Reads, fill = Species)) +
         legend.title = element_text(size = 14, face = "bold"))
 
 
-# filter out homo sapiens
+# filter out homo sapiens and NTC samples
 seq_df_40_nohs <- filter(seq_df_40, Species != "Homo_sapiens")
+seq_df_40_nohs <- filter(seq_df_40_nohs, !grepl("NTC", seq_df_40_nohs$Sample))
 # adjust colors
 custom_colors2 <- c("#6bc9b2", "#40aac2","#87a7e3","#01161e")
+
+#change order of factor
+seq_df_40_nohs$Digestive_Sample <- factor(seq_df_40_nohs$Digestive_Sample, levels = c("M1", "M4", "M5", "CA14", "HP3", "HP5", "HP15"))
 
 #plot again
 no_hs_seq_plot <- ggplot(seq_df_40_nohs, aes(x = specific_blocker, y = Reads, fill = Species)) +
