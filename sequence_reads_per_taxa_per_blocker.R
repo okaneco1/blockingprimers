@@ -104,16 +104,27 @@ custom_colors <- c("#6bc9b2", "#40aac2","#87a7e3","#01161e")
 #change order of factor
 matrix1_long$Digestive_Sample <- factor(matrix1_long$Digestive_Sample, levels = c("M1", "M4", "M5", "HP3", "HP5", "HP15", "CA14", "NTC"))
 
+# change facet labels for clarity
+levels(matrix1_long$Digestive_Sample) <- c("M1 (1:1, SL:LT)",
+                                           "M4 (9:1, SL:LT)",
+                                           "M5 (9:1, SL:WS)",
+                                           "HP3 (Wild Juvenile)",
+                                           "HP5 (Wild Juvenile)",
+                                           "HP15 (Wild Juvenile)",
+                                           "CA14 (Wild Adult)",
+                                           "NTC (No-Template Control)")
+
+
 #plot
 matrix1_long_plot <- ggplot(matrix1_long, aes(x = specific_blocker, y = Reads, fill = Species)) +
   geom_col() +
   scale_fill_manual(values = custom_colors, 
-                    labels = c("Salmonid (unclassified)",  "Lake Trout", "White Sucker", "Sea Lamprey"))+
+                    labels = c("Salmonid",  "Lake Trout", "White Sucker", "Sea Lamprey"))+
   theme_few()+
   theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size = 15),
         plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Sequence Read Counts per Taxa per Blocking Primer") +
-  labs(x = "Blocking Primer", y = "Number of Sequence Reads") +
+  ggtitle("Sequence Read Counts per OTU per Blocking Primer") +
+  labs(x = "Blocking Primer", y = "Number of Sequence Reads", fill = "OTU") +
   facet_wrap(~ Digestive_Sample, ncol = 2)+  # toggle this on/off for wrapped/unwrapped plot
   theme(text = element_text(family = "Helvetica", face = "bold"),
         strip.text = element_text(size = 14),
@@ -130,14 +141,17 @@ matrix1_long_plot
 
 # only looking to plot M4, M5, HP15, and CA14
 matrix1_simple <- matrix1_long %>%
-  filter(Digestive_Sample %in% c("M4", "M5", "HP15", "CA14"))
+  filter(Digestive_Sample %in% c("M4 (9:1, SL:LT)",
+                                 "M5 (9:1, SL:WS)",
+                                 "HP15 (Wild Juvenile)",
+                                 "CA14 (Wild Adult)"))
 
 #drop unused levels
 matrix1_simple$Digestive_Sample <- droplevels(matrix1_simple$Digestive_Sample)
 
 # change facet labels for clarity
-levels(matrix1_simple$Digestive_Sample) <- c("M4 (90:10 SL:LT)",
-                                             "M5 (90:10 SL:WS)",
+levels(matrix1_simple$Digestive_Sample) <- c("M4 (9:1, SL:LT)",
+                                             "M5 (9:1, SL:WS)",
                                              "HP15 (Wild Juvenile)",
                                              "CA14 (Wild Adult)")
 
@@ -182,5 +196,116 @@ lamprey_blocker_reads <- matrix1_long %>%
 round(mean(lamprey_blocker_reads$Reads), digits = 2) # 1.03
 round(sd(lamprey_blocker_reads$Reads), digits = 2) # 1.38
 
+
+
+
+
+# looking at CA14 specifically
+ca14 <- matrix1_long %>% 
+  filter(sample == "CA14") %>%
+  filter(specific_blocker == "Blocker2" | specific_blocker == "Blocker6")
+
+blocker6_ratio <- 3063 / (3063 + 617) # lake trout proportion of total
+blocker2_ratio <- 15563 / (15563 + 2819) # lake trout porportion of total
+
+
+# comparison of sea lamprey blocked vs unblocked read counts
+
+# set up data frame
+read_count_comparisons <- matrix1 %>%
+  filter(specific_blocker == "No_Blocker") %>%
+  select(sample, Petromyzontidae_unclassified) %>%
+  rename(unblocked = Petromyzontidae_unclassified)
+
+# get blocker names
+blockers <- unique(matrix1$specific_blocker)
+blockers <- blockers[blockers != "No_Blocker"]
+
+# create list to store data
+blocker_list <- list()
+
+# loop through and set read counts to blockers
+for (i in 1:length(blockers)) {
+  blocker_name <- paste0("blocker", i)
+  blocker_df <- matrix1 %>%
+    filter(specific_blocker == blockers[i]) %>%
+    select(sample, Petromyzontidae_unclassified) %>%
+    rename(!!blocker_name := Petromyzontidae_unclassified)
+  blocker_list[[i]] <- blocker_df
+}
+
+# reduce list by sample name
+all_data <- reduce(blocker_list, full_join, by = "sample")
+
+# combine data to comparison df
+final_read_count_comparisons <- full_join(read_count_comparisons, all_data, by = "sample")
+final_read_count_comparisons <- filter(final_read_count_comparisons, sample != "NTC") # remove NTC row
+
+# statistical analysis
+# extract column names for blockers
+blocker_columns <- names(final_read_count_comparisons)[grepl("^blocker", names(final_read_count_comparisons))]
+
+# perform t test on each column
+t_test_results <- lapply(blocker_columns, function(blocker) {
+  t_test <- t.test(final_read_count_comparisons$unblocked, final_read_count_comparisons[[blocker]], paired = TRUE, na.rm = TRUE)
+  data.frame(
+    blocker = blocker,
+    p_value = t_test$p.value,
+    statistic = t_test$statistic,
+    mean_unblocked = mean(final_read_count_comparisons$unblocked, na.rm = TRUE),
+    mean_blocker = mean(final_read_count_comparisons[[blocker]], na.rm = TRUE)
+  )
+})
+
+t_test_results_df <- do.call(rbind, t_test_results)
+t_test_results_df
+
+
+
+# comparison of lake trout blocked vs unblocked read counts
+read_count_comparisons_lt <- matrix1 %>%
+  filter(specific_blocker == "No_Blocker") %>%
+  select(sample, Salvelinus_namaycush) %>%
+  rename(unblocked = Salvelinus_namaycush)
+
+# reset blocker list
+blocker_list_lt <- list()
+
+# loop through each blocker to assign read counts to blockers
+for (i in 1:length(blockers)) {
+  blocker_name <- paste0("blocker", i)
+  blocker_df_lt <- matrix1 %>%
+    filter(specific_blocker == blockers[i]) %>%
+    select(sample, Salvelinus_namaycush) %>%
+    rename(!!blocker_name := Salvelinus_namaycush)
+  blocker_list_lt[[i]] <- blocker_df_lt
+}
+
+#combine
+all_data_lt <- reduce(blocker_list_lt, full_join, by = "sample")
+
+# combine data to comparison df
+final_read_count_comparisons_lt <- full_join(read_count_comparisons_lt, all_data_lt, by = "sample")
+final_read_count_comparisons_lt <- filter(final_read_count_comparisons_lt, sample != "NTC" & sample != "M5") # remove NTC row and M5 (white sucker)
+
+# statistical analysis
+
+# extract column names for blockers
+blocker_columns_lt <- names(final_read_count_comparisons_lt)[grepl("^blocker", names(final_read_count_comparisons_lt))]
+
+# perform t test on each column
+t_test_results_lt <- lapply(blocker_columns_lt, function(blocker) {
+  t_test <- t.test(final_read_count_comparisons_lt$unblocked, final_read_count_comparisons_lt[[blocker]], paired = TRUE, na.rm = TRUE)
+  data.frame(
+    blocker = blocker,
+    p_value = t_test$p.value,
+    statistic = t_test$statistic,
+    mean_unblocked = mean(final_read_count_comparisons_lt$unblocked, na.rm = TRUE),
+    mean_blocker = mean(final_read_count_comparisons_lt[[blocker]], na.rm = TRUE)
+  )
+})
+
+t_test_results_lt_df <- do.call(rbind, t_test_results_lt)
+print(t_test_results_df[5], row.names =FALSE)
 
 
