@@ -309,3 +309,33 @@ t_test_results_lt_df <- do.call(rbind, t_test_results_lt)
 print(t_test_results_df[5], row.names =FALSE)
 
 
+
+
+# Check change in read counts across blocking primers and species
+# This groups and summarizes the average delta in read count for all species
+# across all samples when a blocking primer was included vs without a blocker
+
+no_blocker_data <- matrix1_long %>%
+  filter(specific_blocker == "No_Blocker") %>%
+  select(sample, Species, Reads, Digestive_Sample) %>%
+  rename(No_Blocker_Reads = Reads)
+
+df_with_no_blocker <- matrix1_long %>%
+  left_join(no_blocker_data, by = c("sample", "Species", "Digestive_Sample"))
+
+df_with_percent_decrease <- df_with_no_blocker %>%
+  mutate(Read_Count_Delta = ifelse(No_Blocker_Reads > 0, 
+                                   100 * (Reads - No_Blocker_Reads) / No_Blocker_Reads, 
+                                   NA))
+
+summary_df <- df_with_percent_decrease %>%
+  filter(specific_blocker != "No_Blocker") %>%  
+  group_by(Digestive_Sample, Species) %>%
+  summarise(Average_Read_Delta = mean(Read_Count_Delta, na.rm = TRUE))
+
+print(summary_df)
+
+
+
+
+
