@@ -1,5 +1,5 @@
 # Blocking Primers
 
-Analyses uses for the development of a blocking primer specific to sea lamprey (_Petromyzon marinus_)
+This analysis focused on developing a blocking primer specific to sea lamprey (_Petromyzon marinus_).
 
-Blocking primers were then used in conjunction with universal primers during PCR of dietary samples to emphasize amplification of host species
+The blocking primer was designed to bind selectively to sea lamprey DNA, reducing its amplification during PCR. It was used alongside universal primers to prioritize the amplification of host species DNA in dietary samples.
