@@ -1,6 +1,6 @@
 ## mothur Resources
 
-This folder contains the resources for demultiplexing and bioinformatic filtering via mothur.
+This folder contains the resources for sequence demultiplexing and filtering via mothur.
 
 
 ### Files
