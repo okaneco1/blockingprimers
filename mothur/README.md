@@ -12,10 +12,10 @@ This folder contains the resources for demultiplexing and bioinformatic filterin
   A job submission script for a SLURM workload manager. It runs the `make.contigs` command to assemble paired-end reads into contigs, handle demultiplexing, and perform quality control. This step prepares the sequencing data for downstream analysis.
 
 - **mothur_job_submission**:  
-  Another job submission script that calls `mothur_script.sh`.
+  Another job submission script that calls `SL_12S_BP_mothur_script.sh`.
 
 - **mothur_script.sh**:  
-  This script performs the bioinformatic workflow using **Mothur** to process the sequencing data. Tasks include quality control, sequence alignment, clustering, and taxonomic classification.
+  This script performs the bioinformatic workflow using **mothur** to process the sequencing data. Tasks include quality control, sequence alignment, clustering, and taxonomic classification.
 
 
 
