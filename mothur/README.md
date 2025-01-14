@@ -2,6 +2,7 @@
 
 This folder contains the resources for demultiplexing and bioinformatic filtering via mothur.
 
+
 ### Files:
 
 **FASTA File:** This is the alignmen database used for this project – a list of Great Lakes fish. No primers are included in the alignment.
@@ -16,28 +17,54 @@ This folder contains the resources for demultiplexing and bioinformatic filterin
 ### mothur Script Breakdown
 
 Input and Filtering:
+
 summary.seqs: Generates sequence statistics (stability.trim.contigs.fasta).
+
 screen.seqs: Filters sequences by ambiguity (maxambig=0), length (maxlength=107), and quality metrics.
+
 unique.seqs: Removes duplicate sequences to retain unique ones.
+
 count.seqs: Updates sequence counts based on group information.
 
+
+
 Alignment and Preprocessing:
+
 align.seqs: Aligns sequences to a reference (FishOnly_12S_align_JK_noprimers_091922.fas).
+
 screen.seqs: Further filters alignments (minlength=85, maxlength=110, maxhomop=7).
+
 pre.cluster: Groups sequences with up to 0 mismatches (diffs=0).
 
+
+
 Chimera Detection:
+
+
 chimera.vsearch: Identifies chimeric sequences (dereplicate=t).
+
 remove.seqs: Removes detected chimeric sequences.
 
+
+
 Taxonomic Classification:
+
 classify.seqs: Assigns taxonomy using a reference and taxonomy file (cutoff=80).
 
+
+
 Clustering and OTU Generation:
+
 dist.seqs: Calculates pairwise distances (cutoff=0.03).
+
 cluster: Clusters sequences into OTUs (cutoff=0.01).
 
+
+
 Output Generation:
+
 make.shared: Creates a shared file for community analysis.
+
 classify.otu: Assigns taxonomy to OTUs.
+
 count.groups: Counts the number of sequences per group.
