@@ -8,6 +8,9 @@ This folder contains the resources for sequence demultiplexing and filtering via
 - **FASTA File**:  
   This is the alignment database used for this project—a list of Great Lakes fish. Primers are not included in the alignment.
 
+- **oligos.txt File**:  
+  This is the oligos alignment file used for demultiplexing sequences based on attached index primers. 
+
 - **MakeContigs**:  
   A job submission script for a SLURM workload manager. It runs the `make.contigs` command to assemble paired-end reads into contigs, handle demultiplexing, and perform quality control. This step prepares the sequencing data for downstream analysis.
 
