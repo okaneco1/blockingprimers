@@ -1,7 +1,10 @@
-# Extracting Raw Sequences for Specific OTUs in Selected Samples in mothur
+# Extracting Raw Sequences for Specific OTUs in mothur  
 
-## Author: Conor O'Kane  
-## Description:
+### Author: Conor O'Kane  
+### Tools Used: mothur, R  
+---
+
+## Overview  
 This document provides a step-by-step guide for extracting raw sequences from specific **OTUs** in selected samples using **mothur** and **R**. 
 
 For example, in my blocking primer project, the same dietary sample was generatiing different OTUs depending on which blocking primer was included (lake trout reads in some, salmonid reads in others). I wanted to take a look at the raw amplicon sequences that were being grouped into those OTUs for each sample to assess their similarity. This was the way I did so. 
