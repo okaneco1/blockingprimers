@@ -31,7 +31,7 @@ ggmsa("./trimmed_sequences_20.fas", 1, 75,
 # seeing how long without primers
 no_primer <- readDNAStringSet("./FishOnly_12S_align_JK_noprimers_091922.fas")
 top_four <- no_primer[1:4]
-pairwiseAlignment()
+
 
 calc_differences <- function(seq1, seq2) {
   sum(as.character(seq1) != as.character(seq2))
@@ -65,8 +65,37 @@ distance_matrix <- dist.dna(whitefish_dnabin, model = "N")
 range(distance_matrix)
 
 
+# Comparing differences in bp between Salmonids
+salmonid_sequences <- nt_sequences[grep("Salvelinus|Salmo|Oncorhynchus|Coregonus|Prosopium",
+                                   names(nt_sequences))]
+# convert to DNAbin object
+salmonid_dnabin <- as.DNAbin(salmonid_sequences)
+# get species names
+species_names <- sapply(strsplit(labels(salmonid_dnabin), "_"), function(x) paste(x[2], x[3], sep = "_"))
 
+# Initialize a list to store the results
+species_variation <- list()
 
+# Loop over each unique species and calculate the intraspecific variation
+for (i in unique(species_names)) {
+  # Subset DNAbin object for the current species
+  species_dnabin <- salmonid_dnabin[species_names == i]
+  
+  # Calculate the distance matrix using the "N" model (base pair differences)
+  dist_matrix <- dist.dna(species_dnabin, model = "N", pairwise.deletion = FALSE)
+  
+  # If there are more than one sequence for the species, find the range of distances
+  if (length(dist_matrix) > 1) {
+    species_variation[[i]] <- range(dist_matrix)
+  } else {
+    species_variation[[i]] <- c(0, 0) # No variation for a single sequence
+  }
+}
+
+# Print the range of intraspecific variation for each species
+species_variation
+
+range(dist.dna(salmonid_dnabin, model = "N", pairwise.deletion = FALSE))
 
 
 
