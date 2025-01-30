@@ -1,4 +1,4 @@
-# Extracting Raw Sequences for Specific OTUs in mothur  
+# Extracting Raw Sequences for Specific OTUs from Selected Samples in mothur  
 
 ### Author: Conor O'Kane  
 ### Tools Used: mothur, R  
@@ -7,7 +7,7 @@
 ## Overview  
 This document provides a step-by-step guide for extracting raw sequences from specific **OTUs** in selected samples using **mothur** and **R**. 
 
-For example, in my blocking primer project, the same dietary sample was generatiing different OTUs depending on which blocking primer was included (lake trout reads in some, salmonid reads in others). I wanted to take a look at the raw amplicon sequences that were being grouped into those OTUs for each sample to assess their similarity. This was the way I did so. 
+For example, in my blocking primer project, the same dietary sample was generating different OTUs depending on which blocking primer was included (lake trout reads in some, salmonid reads in others). I wanted to take a look at the raw amplicon sequences that were being grouped into those OTUs for each sample to assess their similarity. This was the way I did so. 
 
 ---
 
@@ -18,11 +18,19 @@ Before running mothur, ensure that the correct version is loaded. Use `module sp
 module spider mothur
 module load Mothur/1.48.0-foss-2023a-Python-3.11.3  # Current version at the time of writing
 ```
-
-### Select the Sample Groups
-Run `get.groups` in mothur to select the relevant samples (groups) that you want to include from a .shared file. Use the sample names separated by "-". This uses the .shared file generated from `make.shared` in previous mothur protocols:
+We are then read to open up mothur:
 ```bash
-mothur > get.groups(shared=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.shared, groups=40_PMBlock_B_C3_CA14.12S-40_PMBlock_A_dT_H_CA14.12S-40_PMBlock_B_C3_H_CA14.12S)
+mothur
+```
+### Select the Sample Groups
+Run `get.groups` in mothur to select the relevant samples (groups) that you want to include from a .shared file. Use the sample names separated by "-". This uses the .shared file generated from `make.shared` in previous mothur protocols.
+
+In my case, my three dietary samples were:  
+40_PMBlock_B_C3_CA14.12S  
+40_PMBlock_A_dT_H_CA14.12S  
+40_PMBlock_B_C3_H_CA14.12S
+```bash
+get.groups(shared=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.shared, groups=40_PMBlock_B_C3_CA14.12S-40_PMBlock_A_dT_H_CA14.12S-40_PMBlock_B_C3_H_CA14.12S)
 ```
 **Output Files (in my case):**
 ```
@@ -30,17 +38,17 @@ stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.0.01.pick.share
 ```
 Rename the output file with for easier reference. Copy the previous output for the `shared` argument:
 ```bash
-mothur > rename.file(shared=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.0.01.pick.shared, new=CA14.Blockers2.3.5.shared)
+rename.file(shared=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.0.01.pick.shared, new=CA14.Blockers2.3.5.shared)
 ```
 
 ---
 
 ## 2. Identify Top OTUs in R
 
-To better visualize the top OTUs in your samples, we can organize them with a bit of R. This can all still be done in the terminal window, and R should already be loaded on the HPCC. So quit out of **mothur** and open up **R**. 
+To better visualize the top OTUs in your samples, we can organize them with a bit of R. This can all still be done in the terminal window, and R should already be loaded on the HPCC. So `quit` out of **mothur** and open up **R**. 
 
 ```bash
-module load R
+R
 ```
 
 ### Read in the Shared File
@@ -109,28 +117,31 @@ You can `quit()` out of R
 
 ## 3. Extract Sequences with mothur
 Hop back into **mothur** to finish the sequence extractions
+```bash
+mothur
+```
 
 
 Use `get.otus` to filter the dataset to only the selected OTUs using a list file. This list file would have been generated from `cluster` with the lab mothur protocol. Use the .accnos file you just saved:
 
 ```bash
-mothur > get.otus(list=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.list, accnos=CA14.blockers235.accnos)
+get.otus(list=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.list, accnos=CA14.blockers235.accnos)
 ```
 
 Use `list.seqs` to list all the sequence names (accession numbers) from selected OTUs. This uses the output from the previous step:
 
 ```bash
-mothur > list.seqs(list=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.0.01.pick.list)
+list.seqs(list=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.0.01.pick.list)
 ```
 Generate filtered FASTA and count files with `get.seqs`. This extracts only the sequences corresponding to the selected OTUs from the original FASTA file. Use the FASTA and count table outputs from previous mothur protocol, and the accnos file from the previous step:
 
 ```bash
-mothur > get.seqs(fasta=stability.trim.contigs.good.unique.fasta, count=stability.trim.contigs.good.unique.good.precluster.count_table, accnos=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.0.01.pick.accnos)
+get.seqs(fasta=stability.trim.contigs.good.unique.fasta, count=stability.trim.contigs.good.unique.good.precluster.count_table, accnos=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.0.01.pick.accnos)
 ```
 
 Split the extracted sequences into separate FASTA and count table files for each sample with `split.groups`. Use the same groups as used with `get.groups` from before:
 ```bash
-mothur > split.groups(fasta=stability.trim.contigs.good.unique.pick.fasta, count=stability.trim.contigs.good.unique.good.precluster.pick.count_table, groups=40_PMBlock_B_C3_CA14.12S-40_PMBlock_A_dT_H_CA14.12S-40_PMBlock_B_C3_H_CA14.12S)
+split.groups(fasta=stability.trim.contigs.good.unique.pick.fasta, count=stability.trim.contigs.good.unique.good.precluster.pick.count_table, groups=40_PMBlock_B_C3_CA14.12S-40_PMBlock_A_dT_H_CA14.12S-40_PMBlock_B_C3_H_CA14.12S)
 ```
 **Output Files:**
 These are the output files, split by each of your selected samples that contain the raw sequences (.fasta) and count numbers (.count_table) for your selected OTUs. 
@@ -150,10 +161,10 @@ For myself, I wanted to verify the classification chain to see which sequences w
 
 If you wish to do similar, you can use the `classify.seqs` with generated count and fasta files along with your reference database and taxonomy files. This will generate wang.taxonomy and wang.tax.summary files to further examine how your sequences were classified.
 ```bash
-mothur > classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_B_C3_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_B_C3_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt, cutoff=80)
+classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_B_C3_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_B_C3_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt, cutoff=80)
 ```
 Repeat for other sample groups:
 ```bash
-mothur > classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_A_dT_H_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_A_dT_H_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt, cutoff=80)
+classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_A_dT_H_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_A_dT_H_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt, cutoff=80)
 ```
 
