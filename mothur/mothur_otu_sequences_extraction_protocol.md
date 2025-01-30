@@ -122,7 +122,7 @@ mothur
 ```
 
 
-Use `get.otus` to filter the dataset to only the selected OTUs using a list file. This list file would have been generated from `cluster` with the lab mothur protocol. Use the .accnos file you just saved:
+Use `get.otus` to filter the dataset to only the selected OTUs from a list file. This list file would have been generated from `cluster` with the lab mothur protocol. Use the .accnos file you just saved for OTU selection:
 
 ```bash
 get.otus(list=stability.trim.contigs.good.unique.good.precluster.pick.opti_mcc.list, accnos=CA14.blockers235.accnos)
@@ -159,12 +159,14 @@ stability.trim.contigs.good.unique.pick.40_PMBlock_B_C3_H_CA14.12S.fasta
 ## 4. Classify Sequences (Optional)
 For myself, I wanted to verify the classification chain to see which sequences were being grouped into the different OTUs (e.g. what was being classified as "lake trout" vs "salmonid").
 
-If you wish to do similar, you can use the `classify.seqs` with generated count and fasta files along with your reference database and taxonomy files. This will generate wang.taxonomy and wang.tax.summary files to further examine how your sequences were classified.
+To do so, I used `classify.seqs` with the generated count and fasta files along with my reference database and taxonomy files. This generates wang.taxonomy and wang.tax.summary files to further examine how sequences were classified.
 ```bash
 classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_B_C3_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_B_C3_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt, cutoff=80)
 ```
 Repeat for other sample groups:
 ```bash
 classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_A_dT_H_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_A_dT_H_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt, cutoff=80)
+classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_B_C3_H_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_B_C3_H_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt,cutoff=80)
+
 ```
 
