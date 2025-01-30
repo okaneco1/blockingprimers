@@ -167,6 +167,6 @@ Repeat for other sample groups:
 ```bash
 classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_A_dT_H_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_A_dT_H_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt, cutoff=80)
 classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_B_C3_H_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_B_C3_H_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt,cutoff=80)
-
+classify.seqs(count=stability.trim.contigs.good.unique.good.precluster.pick.40_PMBlock_B_C3_H_CA14.12S.count_table, fasta=stability.trim.contigs.good.unique.pick.40_PMBlock_B_C3_H_CA14.12S.fasta, reference=FishOnly_12S_align_JK_noprimers_091922.fas, taxonomy=FishOnly_12S_rDNA_taxonomy_091922.txt,cutoff=80)
 ```
 
