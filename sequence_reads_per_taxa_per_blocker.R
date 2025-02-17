@@ -248,12 +248,16 @@ write_csv(final_read_count_comparisons, file = "average_sealamprey_reads_per_sam
 # extract column names for blockers
 blocker_columns <- names(final_read_count_comparisons)[grepl("^blocker", names(final_read_count_comparisons))]
 
+# length for bonferonni correction
+num_tests <- length(blocker_columns)
+
 # perform t test on each column
 t_test_results <- lapply(blocker_columns, function(blocker) {
   t_test <- t.test(final_read_count_comparisons$unblocked, final_read_count_comparisons[[blocker]], paired = TRUE, na.rm = TRUE)
   data.frame(
     blocker = blocker,
     p_value = t_test$p.value,
+    p_value_corrected = t_test$p.value * num_tests,
     t_value = t_test$statistic,
     mean_unblocked = mean(final_read_count_comparisons$unblocked, na.rm = TRUE),
     mean_blocker = mean(final_read_count_comparisons[[blocker]], na.rm = TRUE),
@@ -297,7 +301,7 @@ all_data_lt <- reduce(blocker_list_lt, full_join, by = "sample")
 # combine data to comparison df
 final_read_count_comparisons_lt <- full_join(read_count_comparisons_lt, all_data_lt, by = "sample")
 final_read_count_comparisons_lt <- filter(final_read_count_comparisons_lt, 
-                                          sample != "NTC" & sample != "M5" & sample != "CA14",) # M5 is white sucker and CA14 is an outlier
+                                          sample != "NTC" & sample != "M5" & sample != "CA14") # M5 is white sucker and CA14 is an outlier
 
 write_csv(final_read_count_comparisons_lt, file = "average_laketrout_reads_per_sample.csv")
 
@@ -312,6 +316,7 @@ t_test_results_lt <- lapply(blocker_columns_lt, function(blocker) {
   data.frame(
     blocker = blocker,
     p_value = t_test$p.value,
+    p_value_corrected = t_test$p.value * num_tests,
     t_value = t_test$statistic,
     mean_unblocked = mean(final_read_count_comparisons_lt$unblocked, na.rm = TRUE),
     mean_blocker = mean(final_read_count_comparisons_lt[[blocker]], na.rm = TRUE),
@@ -322,6 +327,7 @@ t_test_results_lt <- lapply(blocker_columns_lt, function(blocker) {
 
 t_test_results_lt_df <- do.call(rbind, t_test_results_lt)
 t_test_results_lt_df <- t_test_results_lt_df[,c(1,4:7,2,3)]
+t_test_results_lt_df
 write_csv(t_test_results_lt_df, file = "t test results lake trout.csv")
 
 print(t_test_results_df[5], row.names =FALSE)
