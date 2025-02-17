@@ -257,7 +257,6 @@ t_test_results <- lapply(blocker_columns, function(blocker) {
   data.frame(
     blocker = blocker,
     p_value = t_test$p.value,
-    p_value_corrected = t_test$p.value * num_tests,
     t_value = t_test$statistic,
     mean_unblocked = mean(final_read_count_comparisons$unblocked, na.rm = TRUE),
     mean_blocker = mean(final_read_count_comparisons[[blocker]], na.rm = TRUE),
@@ -267,6 +266,11 @@ t_test_results <- lapply(blocker_columns, function(blocker) {
 })
 
 t_test_results_df <- do.call(rbind, t_test_results)
+
+# add in a sequential bonferonni correction to account for multiple tests
+t_test_results_df <- t_test_results_df[order(t_test_results_df$p_value), ]
+# sequential correction
+t_test_results_df$p_value_corrected <- t_test_results_df$p_value * (num_tests:1)  
 
 t_test_results_df <- t_test_results_df[,c(1,4:7,2,3)]
 write_csv(t_test_results_df, file = "t test results sea lamprey.csv")
@@ -316,7 +320,6 @@ t_test_results_lt <- lapply(blocker_columns_lt, function(blocker) {
   data.frame(
     blocker = blocker,
     p_value = t_test$p.value,
-    p_value_corrected = t_test$p.value * num_tests,
     t_value = t_test$statistic,
     mean_unblocked = mean(final_read_count_comparisons_lt$unblocked, na.rm = TRUE),
     mean_blocker = mean(final_read_count_comparisons_lt[[blocker]], na.rm = TRUE),
@@ -325,8 +328,17 @@ t_test_results_lt <- lapply(blocker_columns_lt, function(blocker) {
   )
 })
 
+
 t_test_results_lt_df <- do.call(rbind, t_test_results_lt)
-t_test_results_lt_df <- t_test_results_lt_df[,c(1,4:7,2,3)]
+
+# add in a sequential bonferonni correction to account for multiple tests
+num_tests_lt <- nrow(t_test_results_lt_df)
+t_test_results_lt_df <- t_test_results_lt_df[order(t_test_results_lt_df$p_value), ]
+#sequential correction
+t_test_results_lt_df$p_value_corrected <- t_test_results_lt_df$p_value * (num_tests:1)  
+
+
+t_test_results_lt_df <- t_test_results_lt_df[,c(1:2,8,3:7)]
 t_test_results_lt_df
 write_csv(t_test_results_lt_df, file = "t test results lake trout.csv")
 
