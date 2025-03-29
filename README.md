@@ -19,6 +19,7 @@ This repository contains the data, analysis scripts, and documentation used to:
 - Compare 25 vs 40 PCR cycle outputs
 - Extract and examine OTU composition per sample
 - Visualize sequence similarity between host species for primer design
+- Process raw sequence data using the mothur pipeline 
 
 These tools are intended to facilitate future studies applying blocking primers in dietary DNA metabarcoding, particularly when developing novel blocking primers and assessing the balance between non-target DNA amplificaion and target DNA suppression.
 
