@@ -76,12 +76,14 @@ filtered_matrix_2 <- filtered_matrix_1 %>%
 #--- light colors = 25 cycles
 #--- dark colors = 40 cycles
 
-custom_colors2 <- c("Blocker2_25" = "#add8e6", 
-                   "Blocker2_40" = "#324ca8", 
-                   "Blocker6_25" = "#ffcc99", 
-                   "Blocker6_40" = "#ff8c00", 
-                   "No_Blocker_25" = "#90ee90", 
-                   "No_Blocker_40" = "#0a8029") 
+custom_colors2 <- c(
+  "Blocker2_25" = "#abdbd3",     
+  "Blocker2_40" = "#30a18d",    
+  "Blocker6_25" = "#c2d8f0",     
+  "Blocker6_40" = "#456990",     
+  "No_Blocker_25" = "#f7cdcf",  
+  "No_Blocker_40" = "#ba3f43"    
+)
 
 # reverse the factor levels
 filtered_matrix_2 <- filtered_matrix_2 %>%
@@ -91,15 +93,22 @@ filtered_matrix_2 <- filtered_matrix_2 %>%
 ggplot(filtered_matrix_2, aes(x = sample_blocker, y = Reads, fill = sample_group)) +
   geom_bar(stat="identity", position=position_dodge(width = 0.75, preserve = "single")) + # preserve as some data is missing and this preserves column width
   facet_wrap(~Species) +
-  scale_fill_manual(values = custom_colors2) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 70, vjust = 0.95, hjust=1, size=9),
-        panel.spacing = unit(1, "lines")) +
   labs(x = "Sample",
        y = "Number of Sequence Reads",
        title = "Sequence Reads per Cycle Number",
-       fill = "Blocker + Cycle Number") 
+       fill = "Blocker + Cycle Number") +
+  scale_fill_manual(values = custom_colors2) +
+  coord_flip()+
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right",
+    legend.background = element_rect(fill = "white", color = "black"),
+    panel.grid.major = element_line(color = alpha("gray", 0.1)),
+    panel.grid.minor = element_line(color = alpha("gray", 0.1))
+  )
 
+ggsave("cycle_number_sequence_comparison.png", dpi=300, height=4, width=8)
 
 # This only looks at sea lamprey and lake trout -- similar results were shown for the single
 # white sucker sample (M5)
